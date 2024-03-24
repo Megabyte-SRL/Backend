@@ -1,13 +1,28 @@
 version: '3.8'
 
+#Docker Networks
+networks:
+  laravel:
+    driver: bridge
+
+#Docker Volumes
+volumes:
+  dbdata:
+    driver: local
+
 services:
   app:
     build:
       context: ./docker/php
+    container_name: laravel8-app
     volumes:
       - ./src:/var/www/html
+    ports:
+      - "8080:80"
     depends_on:
-      - mysql
+      - db
+    networks:
+      - laravel
 
   webserver:
     build:
@@ -18,42 +33,47 @@ services:
       - "80:80"
     volumes:
       - ./src:/var/www/html
+    networks:
+      - laravel
 
-  mysql:
-    image: mysql:5.7
+  db:
+    image: mariadb:10.6.3
+    command: --default-authentication-plugin=mysql_native_password
     container_name: mysql
-    restart: unless-stopped
+    restart: always
     tty: true
     ports:
       - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+#      - ./docker/mysql/init:/docker-entrypoint-initdb.d
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
+    networks:
+      - laravel
   
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      PMA_HOST: db
       PMA_PORT: 3306
       PMA_ARBITRARY: 1
     restart: always
     depends_on:
-      - mysql
+      - db
     ports:
     - "8081:80"
     volumes:
       - /sessions
     links:
-      - mysql
-
-
-volumes:
-  dbdata:
+      - db
+    networks:
+      - laravel
