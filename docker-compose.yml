@@ -14,25 +14,20 @@ services:
   app:
     build:
       context: ./docker/php
+      dockerfile: Dockerfile
+      args:
+        uid: ${UID}
     container_name: laravel8-app
     volumes:
       - ./src:/var/www/html
     ports:
       - "8080:80"
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html/public
+      - APACHE_RUN_USER=#${UID}
+      - APACHE_RUN_GROUP=#${UID}
     depends_on:
       - db
-    networks:
-      - laravel
-
-  webserver:
-    build:
-      context: ./docker/apache
-    depends_on:
-      - app
-    ports:
-      - "80:80"
-    volumes:
-      - ./src:/var/www/html
     networks:
       - laravel
 
