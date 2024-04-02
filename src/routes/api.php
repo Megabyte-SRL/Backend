@@ -20,3 +20,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('ambientes', [AmbienteController::class, 'index']);
+Route::get('list/ambientes', [AmbienteController::class, 'list']);
+//Route::get('list/horarios-diponibles', [HorarioDisponibleController::class, 'list']);
+Route::post('ambientes', [AmbienteController::class, 'store']);
