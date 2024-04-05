@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GuardarHorariosAmbienteRequest;
 use App\Models\HorarioDisponible;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class HorarioDisponibleController extends Controller
 {
@@ -37,6 +39,39 @@ class HorarioDisponibleController extends Controller
     public function store(Request $request)
     {
         //
+    }
+
+    /**
+     * Guardar una lista de horarios.
+     */
+    public function guardarHorasDisponibles(GuardarHorariosAmbienteRequest $request)
+    {
+        DB::beginTransaction();
+        try {
+            foreach ($request->horasDisponibles as $horarioData) {
+                HorarioDisponible::create([
+                    'ambiente_id' => $request->ambiente_id,
+                    'fecha' => $request->fecha,
+                    'hora_inicio' => $horarioData['horaInicio'],
+                    'hora_fin' => $horarioData['horaFin'],
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 201,
+                'res' => true,
+                'msg' => 'Horario creado correctamente'
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 500,
+                'res' => false,
+                'msg' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

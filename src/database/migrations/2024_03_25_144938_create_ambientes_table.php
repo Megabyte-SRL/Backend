@@ -17,7 +17,6 @@ class CreateAmbientesTable extends Migration
             $table->id();
             $table->string('nombre');
             $table->integer('capacidad');
-            $table->boolean('accesibilidad')->default(0);
             $table->string('descripcion');
             $table->boolean('eliminado')->default(0);
             $table->timestamps();

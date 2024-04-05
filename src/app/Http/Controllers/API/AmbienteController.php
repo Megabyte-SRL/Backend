@@ -45,12 +45,12 @@ class AmbienteController extends Controller
         DB::beginTransaction();
 
         try {
-            $ambienteData = $request->only(['nombre', 'capacidad', 'accesibilidad', 'descripcion']);
+            $ambienteData = $request->only(['nombre', 'capacidad', 'descripcion']);
             $ambiente = Ambiente::create($ambienteData);
             $ubicacionData = $request->input('ubicacion');
             Ubicacion::create([
                 'ambiente_id' => $ambiente->id,
-                'descripcion' => $ubicacionData['descripcion'],
+                'lugar' => $ubicacionData['lugar'],
                 'edificio' => $ubicacionData['edificio'],
                 'piso' => $ubicacionData['piso'],
             ]);
@@ -58,6 +58,7 @@ class AmbienteController extends Controller
             DB::commit();
 
             return response()->json([
+                'status' => 201,
                 'res' => true,
                 'msg' => 'Ambiente creado correctamente'
             ], 201);
@@ -67,6 +68,7 @@ class AmbienteController extends Controller
             \Log::error('Error creando ambiente: ' . $e->getMessage());
 
             return response()->json([
+                'status' => 500,
                 'res' => false,
                 'msg' => $e->getMessage(),
             ], 500);

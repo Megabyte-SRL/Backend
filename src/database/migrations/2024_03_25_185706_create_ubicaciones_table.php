@@ -18,7 +18,7 @@ class CreateUbicacionesTable extends Migration
             $table->foreignId('ambiente_id')
                   ->constrained()
                   ->onDelete('cascade');
-            $table->string('descripcion');
+            $table->string('lugar');
             $table->string('edificio');
             $table->integer('piso');
             $table->timestamps();

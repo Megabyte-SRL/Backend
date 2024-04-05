@@ -18,7 +18,7 @@ class UbicacionAmbienteSeeder extends Seeder
         DB::table('ubicaciones')->insert([
             [
                 'ambiente_id' => $ambiente->id,
-                'descripcion' => 'Descripcion ubicacion ambiente 1',
+                'lugar' => 'Descripcion ubicacion ambiente 1',
                 'edificio' => 'Edificio multiacademico.',
                 'piso' => 4,
             ]

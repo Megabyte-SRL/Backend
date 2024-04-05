@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\AmbienteController;
+use App\Http\Controllers\API\HorarioDisponibleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,3 +24,4 @@ Route::get('ambientes', [AmbienteController::class, 'index']);
 Route::get('list/ambientes', [AmbienteController::class, 'list']);
 //Route::get('list/horarios-diponibles', [HorarioDisponibleController::class, 'list']);
 Route::post('ambientes', [AmbienteController::class, 'store']);
+Route::post('horariosDisponibles', [HorarioDisponibleController::class, 'guardarHorasDisponibles']);

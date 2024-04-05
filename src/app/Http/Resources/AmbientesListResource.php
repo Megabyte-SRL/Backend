@@ -19,7 +19,6 @@ class AmbientesListResource extends JsonResource
             'nombre' => $this->nombre,
             'descripcion' => $this->descripcion,
             'capacidad' => $this->capacidad,
-            'accesibilidad' => $this-> accesibilidad,
         ];
     }
 }

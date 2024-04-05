@@ -13,5 +13,5 @@ class Ubicacion extends Model
      * @var string
      */
     protected $table = 'ubicaciones';
-    protected $fillable = ['ambiente_id', 'descripcion', 'edificio', 'piso'];
+    protected $fillable = ['ambiente_id', 'lugar', 'edificio', 'piso'];
 }

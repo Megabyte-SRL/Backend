@@ -31,3 +31,10 @@ composer create-project --prefer-dist laravel/laravel:^8.0 .
 ```
 php artisan migrate:fresh --seed
 ```
+
+## Eliminar las migraciones
+En caso de que hagamos cambios en los modelos y queremos eliminar toda la información de la base de datos podemos usar el siguiente comando.
+
+```
+php artisan migrate:rollback
+```
