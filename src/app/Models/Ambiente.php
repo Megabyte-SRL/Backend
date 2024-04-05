@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Ambiente extends Model
 {
     use HasFactory;
-    protected $fillable = ['nombre', 'capacidad', 'accesibilidad', 'descripcion'];
+    protected $fillable = ['nombre', 'capacidad', 'descripcion'];
 }

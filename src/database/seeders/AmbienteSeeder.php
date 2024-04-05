@@ -18,14 +18,12 @@ class AmbienteSeeder extends Seeder
             [
                 'nombre' => 'Auditorio',
                 'capacidad' => 28,
-                'accesibilidad' => true,
                 'descripcion' => 'Descripcion Auditorio.',
                 'eliminado' => false,
             ],
             [
                 'nombre' => '692 F',
                 'capacidad' => 15,
-                'accesibilidad' => true,
                 'descripcion' => 'Descripcion 692 F.',
                 'eliminado' => false,
             ]
