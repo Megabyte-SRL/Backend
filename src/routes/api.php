@@ -21,7 +21,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('ambientes', [AmbienteController::class, 'index']);
+Route::post('ambientes', [AmbienteController::class, 'store']);
+Route::delete('ambientes/{id}', [AmbienteController::class, 'eliminar']);
 Route::get('list/ambientes', [AmbienteController::class, 'list']);
 //Route::get('list/horarios-diponibles', [HorarioDisponibleController::class, 'list']);
-Route::post('ambientes', [AmbienteController::class, 'store']);
 Route::post('horariosDisponibles', [HorarioDisponibleController::class, 'guardarHorasDisponibles']);
