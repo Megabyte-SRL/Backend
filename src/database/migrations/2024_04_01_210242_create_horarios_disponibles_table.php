@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateAmbientesTable extends Migration
+class CreateHorariosDisponiblesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,14 @@ class CreateAmbientesTable extends Migration
      */
     public function up()
     {
-        Schema::create('ambientes', function (Blueprint $table) {
+        Schema::create('horarios_disponibles', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre');
-            $table->integer('capacidad');
-            $table->boolean('accesibilidad')->default(0);
-            $table->string('descripcion');
+            $table->foreignId('ambiente_id')
+                  ->constrained()
+                  ->onDelete('cascade');
+            $table->date('fecha');
+            $table->time('hora_inicio');
+            $table->time('hora_fin');
             $table->boolean('eliminado')->default(0);
             $table->timestamps();
         });
@@ -31,6 +33,6 @@ class CreateAmbientesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ambientes');
+        Schema::dropIfExists('horarios_disponibles');
     }
 }
