@@ -110,6 +110,24 @@ class AmbienteController extends Controller
     }
 
     /**
+     * Desabilitar un registro de la base de datos.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function eliminar($id)
+    {
+        $ambiente = Ambiente::find($id);
+        $ambiente->delete();
+        
+        return response()->json([
+            'status' => 204,
+            'res' => true,
+            'msg' => 'Ambiente eliminado exitosamente'
+        ]);
+    }
+
+    /**
      * Listamos todos los ambientes.
      *
      * @return \Illuminate\Http\Response

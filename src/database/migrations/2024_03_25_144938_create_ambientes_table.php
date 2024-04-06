@@ -20,6 +20,7 @@ class CreateAmbientesTable extends Migration
             $table->string('descripcion');
             $table->boolean('eliminado')->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
