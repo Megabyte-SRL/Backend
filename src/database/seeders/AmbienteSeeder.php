@@ -16,15 +16,15 @@ class AmbienteSeeder extends Seeder
     {
         DB::table('ambientes')->insert([
             [
-                'aula' => 'A52',
+                'nombre' => 'Auditorio',
                 'capacidad' => 28,
-                'accesibilidad' => true,
+                'descripcion' => 'Descripcion Auditorio.',
                 'eliminado' => false,
             ],
             [
-                'aula' => '691E',
+                'nombre' => '692 F',
                 'capacidad' => 15,
-                'accesibilidad' => true,
+                'descripcion' => 'Descripcion 692 F.',
                 'eliminado' => false,
             ]
         ]);

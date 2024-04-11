@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateAmbientesTable extends Migration
+class CreateUbicacionesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,15 @@ class CreateAmbientesTable extends Migration
      */
     public function up()
     {
-        Schema::create('ambientes', function (Blueprint $table) {
+        Schema::create('ubicaciones', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre');
-            $table->integer('capacidad');
-            $table->string('descripcion');
-            $table->boolean('eliminado')->default(0);
+            $table->foreignId('ambiente_id')
+                  ->constrained()
+                  ->onDelete('cascade');
+            $table->string('lugar');
+            $table->string('edificio');
+            $table->integer('piso');
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -31,6 +32,6 @@ class CreateAmbientesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ambientes');
+        Schema::dropIfExists('ubicaciones');
     }
 }

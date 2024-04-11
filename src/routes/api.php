@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\AmbienteController;
+use App\Http\Controllers\API\HorarioDisponibleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,3 +21,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('ambientes', [AmbienteController::class, 'index']);
+Route::post('ambientes', [AmbienteController::class, 'store']);
+Route::delete('ambientes/{id}', [AmbienteController::class, 'eliminar']);
+Route::get('list/ambientes', [AmbienteController::class, 'list']);
+//Route::get('list/horarios-diponibles', [HorarioDisponibleController::class, 'list']);
+Route::post('horariosDisponibles', [HorarioDisponibleController::class, 'guardarHorasDisponibles']);
