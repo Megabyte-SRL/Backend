@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\IniciarSesionUsuarioRequest;
 use App\Http\Requests\GuardarUsuarioRequest;
+use App\Http\Resources\UserAuthenticatedShowResource;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,21 +29,8 @@ class UsuarioController extends Controller
             ]);
         }
         $token = $user->createToken('authToken')->plainTextToken;
-        return response()->json([
-            'token' => $token,
-            'role' => $user->rol
-        ], 200);
-        /*
-        $credentials = $request->only(['email', 'password']);
-        if (Auth::guard('usuario')->attempt($credentials)) {
-            $request->session()->regenerate();
-            $user = Auth::guard('usuario')->user();
-            $token = $user->createToken('authToken')->plainTextToken;
-            return response()->json(['token' => $token], 200);
-        } else {
-            return response()->json(['message' => 'Usuario no valido'], 401);
-        }
-        */
+        $user->token = $token;
+        return UserAuthenticatedShowResource::make($user);
     }
 
     /**
