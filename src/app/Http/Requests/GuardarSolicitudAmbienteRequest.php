@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class GuardarAmbienteRequest extends FormRequest
+class GuardarSolicitudAmbienteRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,10 +24,10 @@ class GuardarAmbienteRequest extends FormRequest
     public function rules()
     {
         return [
-            'nombre' => 'required|string',
+            'usuario_id' => 'required',
+            'horario_disponible_id' => 'required',
             'capacidad' => 'required|integer',
-            'descripcion' => 'required|string|max:200',
-            'ubicacion' => 'required',
+            'materia' => 'required|string',
         ];
     }
 }
