@@ -16,4 +16,9 @@ class SolicitudAmbiente extends Model
      */
     protected $table = 'solicitudes_ambientes';
     protected $fillable = ['usuario_id', 'horario_disponible_id', 'capacidad', 'materia', 'estado'];
+
+    public function horarioDisponible()
+    {
+        return $this->belongsTo(HorarioDisponible::class, 'horario_disponible_id');
+    }
 }

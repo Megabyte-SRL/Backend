@@ -24,6 +24,7 @@ class GuardarHorariosAmbienteRequest extends FormRequest
     public function rules()
     {
         return [
+            'ambiente_id' => 'required',
             'fecha' => 'required',
             'horasDisponibles' => 'required',
         ];

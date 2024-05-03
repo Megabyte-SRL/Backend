@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\GuardarSolicitudAmbienteRequest;
 use App\Models\SolicitudAmbiente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SolicitudAmbienteController extends Controller
 {
@@ -92,8 +93,8 @@ class SolicitudAmbienteController extends Controller
     {
         try {
             SolicitudAmbiente::create([
-                'usuario_id' => $request->input('usuario_id'),
-                'horario_disponible_id' => $request->input('horario_disponible_id'),
+                'usuario_id' => Auth::id(),
+                'horario_disponible_id' => $request->input('horarioDisponibleId'),
                 'capacidad' => $request->input('capacidad'),
                 'materia' => $request->input('materia'),
                 'estado' => 'solicitado',

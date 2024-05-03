@@ -30,4 +30,7 @@ Route::delete('ambientes/{id}', [AmbienteController::class, 'eliminar']);
 Route::get('list/ambientes', [AmbienteController::class, 'list']);
 //Route::get('list/horarios-diponibles', [HorarioDisponibleController::class, 'list']);
 Route::post('horariosDisponibles', [HorarioDisponibleController::class, 'guardarHorasDisponibles']);
-Route::post('solicitudesAmbientes', [SolicitudAmbienteController::class, 'guardarSolicitudAmbiente']);
+Route::get('list/horariosDisponibles', [HorarioDisponibleController::class, 'list']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('solicitudesAmbientes', [SolicitudAmbienteController::class, 'guardarSolicitudAmbiente']);
+});

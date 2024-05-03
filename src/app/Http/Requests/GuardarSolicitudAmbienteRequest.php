@@ -24,8 +24,7 @@ class GuardarSolicitudAmbienteRequest extends FormRequest
     public function rules()
     {
         return [
-            'usuario_id' => 'required',
-            'horario_disponible_id' => 'required',
+            'horarioDisponibleId' => 'required',
             'capacidad' => 'required|integer',
             'materia' => 'required|string',
         ];
