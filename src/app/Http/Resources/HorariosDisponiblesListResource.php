@@ -20,6 +20,7 @@ class HorariosDisponiblesListResource extends JsonResource
         }
 
         return [
+            'id' => $this->id,
             'fecha' => $this->fecha,
             'ambiente' => $this->ambiente->nombre,
             'horario' => $this->hora_inicio . ' - ' . $this->hora_fin,
