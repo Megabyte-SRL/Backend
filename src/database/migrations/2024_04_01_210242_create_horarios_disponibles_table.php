@@ -21,7 +21,6 @@ class CreateHorariosDisponiblesTable extends Migration
             $table->date('fecha');
             $table->time('hora_inicio');
             $table->time('hora_fin');
-            $table->boolean('eliminado')->default(0);
             $table->timestamps();
         });
     }

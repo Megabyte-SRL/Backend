@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\AmbienteController;
 use App\Http\Controllers\API\HorarioDisponibleController;
+use App\Http\Controllers\API\SolicitudAmbienteController;
 use App\Http\Controllers\API\UsuarioController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,3 +30,7 @@ Route::delete('ambientes/{id}', [AmbienteController::class, 'eliminar']);
 Route::get('list/ambientes', [AmbienteController::class, 'list']);
 //Route::get('list/horarios-diponibles', [HorarioDisponibleController::class, 'list']);
 Route::post('horariosDisponibles', [HorarioDisponibleController::class, 'guardarHorasDisponibles']);
+Route::get('list/horariosDisponibles', [HorarioDisponibleController::class, 'list']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('solicitudesAmbientes', [SolicitudAmbienteController::class, 'guardarSolicitudAmbiente']);
+});

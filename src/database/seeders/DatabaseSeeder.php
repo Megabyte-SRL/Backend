@@ -18,5 +18,6 @@ class DatabaseSeeder extends Seeder
         $this->call(HorarioDisponibleSeeder::class);
         $this->call(UbicacionAmbienteSeeder::class);
         $this->call(UsuarioSeeder::class);
+        $this->call(SolicitudAmbienteSeeder::class);
     }
 }

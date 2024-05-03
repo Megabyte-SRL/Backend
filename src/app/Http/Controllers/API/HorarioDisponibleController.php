@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GuardarHorariosAmbienteRequest;
+use App\Http\Resources\HorariosDisponiblesListResource;
 use App\Models\HorarioDisponible;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -117,5 +118,16 @@ class HorarioDisponibleController extends Controller
     public function destroy(HorarioDisponible $horarioDisponible)
     {
         //
+    }
+
+    /**
+     * Listamos todos los horarios disponibles.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function list()
+    {
+        $horarios = HorarioDisponible::with(['ambiente', 'solicitudesAmbientes'])->get();
+        return HorariosDisponiblesListResource::collection($horarios);
     }
 }

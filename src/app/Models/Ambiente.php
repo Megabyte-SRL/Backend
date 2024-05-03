@@ -11,4 +11,9 @@ class Ambiente extends Model
     use HasFactory;
     use SoftDeletes;
     protected $fillable = ['nombre', 'capacidad', 'descripcion'];
+
+    public function horariosDisponibles()
+    {
+        return $this->hasMany(HorarioDisponible::class, 'ambiente_id');
+    }
 }

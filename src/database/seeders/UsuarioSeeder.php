@@ -24,6 +24,15 @@ class UsuarioSeeder extends Seeder
                 'rol' => 'admin',
                 'created_at' => now(),
                 'updated_at' => now()
+            ],
+            [
+                'nombre' => 'Jose Enrique',
+                'apellido' => 'Camacho Silvestre',
+                'email' => 'jose.camacho@gmail.com',
+                'password' => Hash::make('password1234'),
+                'rol' => 'docente',
+                'created_at' => now(),
+                'updated_at' => now()
             ]
         ]);
     }

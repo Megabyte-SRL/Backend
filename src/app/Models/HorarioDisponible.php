@@ -14,4 +14,14 @@ class HorarioDisponible extends Model
      */
     protected $table = 'horarios_disponibles';
     protected $fillable = ['ambiente_id', 'fecha', 'hora_inicio', 'hora_fin'];
+
+    public function ambiente()
+    {
+        return $this->belongsTo(Ambiente::class, 'ambiente_id');
+    }
+
+    public function solicitudesAmbientes()
+    {
+        return $this->hasMany(SolicitudAmbiente::class, 'horario_disponible_id');
+    }
 }
