@@ -24,11 +24,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('login', [UsuarioController::class, 'login']);
 Route::post('usuarios', [UsuarioController::class, 'store']);
-//Route::get('ambientes', [AmbienteController::class, 'index']);
 Route::post('ambientes', [AmbienteController::class, 'store']);
+Route::post('ambientes-archivo', [AmbienteController::class, 'subirArchivo']);
 Route::delete('ambientes/{id}', [AmbienteController::class, 'eliminar']);
 Route::get('list/ambientes', [AmbienteController::class, 'list']);
-//Route::get('list/horarios-diponibles', [HorarioDisponibleController::class, 'list']);
 Route::post('horariosDisponibles', [HorarioDisponibleController::class, 'guardarHorasDisponibles']);
 Route::get('list/horariosDisponibles', [HorarioDisponibleController::class, 'list']);
 Route::middleware('auth:sanctum')->group(function () {
