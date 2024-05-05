@@ -28,14 +28,20 @@ RUN docker-php-ext-install \
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Copy application source
-COPY . /var/www/html
-
 # Set working directory
 WORKDIR /var/www/html
 
+# Copy application source from the 'src' directory
+COPY src/ /var/www/html
+
+# Verify contents (debugging step to ensure files are copied correctly)
+RUN ls -al /var/www/html
+
 # Copy Composer binary from the Composer image
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Allow Composer to run as super user
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Install project dependencies with verbose output
 RUN composer install --no-interaction -vvv
