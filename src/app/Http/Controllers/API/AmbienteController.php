@@ -4,9 +4,11 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GuardarAmbienteRequest;
+use App\Http\Requests\GuardarAmbientesArchivoRequest;
 use App\Http\Resources\AmbientesListResource;
 use App\Models\Ambiente;
 use App\Models\Ubicacion;
+use App\Models\HorarioDisponible;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -135,5 +137,82 @@ class AmbienteController extends Controller
     public function list()
     {
         return AmbientesListResource::collection(Ambiente::all());
+    }
+
+    /**
+     * Handle the file upload.
+     *
+     * @param GuardarAmbientesArchivoRequest $request
+     * @return \Illuminate\Http\Response
+     */
+    public function subirArchivo(GuardarAmbientesArchivoRequest $request)
+    {
+        try {
+            $path = $request->file('file')->store('temp');
+            $path = storage_path('app/' . $path);
+
+            $handle = fopen($path, 'r');
+            if (!$handle) {
+                \Log::error('Failed to open the file');
+                return response() -> json(['msg' => 'Failed to open the file'], 500);
+            }
+            $header = fgetcsv($handle);
+            
+            while ($csvLine = fgetcsv($handle)) {
+                $data = array_combine($header, $csvLine);
+                $this->proccessCsvRow($data);
+            }
+
+            fclose($handle);
+            \Storage::delete($path);
+
+            return response()->json(['msg' => 'Archivo procesado exitosamente'], 200);
+        } catch (\Exception $e) {
+            \Log::error('Error cargando ambientes: '. $e->getMessage());
+
+            return response()->json(['msg' => $e->getMessage()], 500);
+        }
+    }
+
+    private function proccessCsvRow($data)
+    {
+        $nombre = $data['Ambiente'];
+        $capacidad = $data['Capacidad'];
+        $descripcion = $data['Descripcion'];
+        $lugar = $data['Lugar'];
+        $piso = $data['Piso'];
+        $edificio = $data['Edificio'];
+        $horarios = array_map('trim', preg_split('/[\-–—]/', $data['Horario']));
+        
+        try {
+            $dateObj = \DateTime::createFromFormat('d/m/Y', $data['Fecha']);
+            if (!$dateObj) {
+                throw new \Exception('Invalid date format.');
+            }
+
+            $fecha = $dateObj->format('Y-m-d');
+        } catch (\Exception $e) {
+            \Log::error('Failed to process date or save to database: ' . $e->getMessage());
+        }
+
+        $ambiente = Ambiente::firstOrCreate([
+            'nombre' => $nombre,
+            'capacidad' => $capacidad,
+            'descripcion' => $descripcion,
+        ]);
+
+        Ubicacion::firstOrCreate([
+            'ambiente_id' => $ambiente->id,
+            'lugar' => $lugar,
+            'edificio' => $edificio,
+            'piso' => $piso
+        ]);
+
+        HorarioDisponible::create([
+            'ambiente_id' => $ambiente->id,
+            'fecha' => $fecha,
+            'hora_inicio' => $horarios[0],
+            'hora_fin' => $horarios[1],
+        ]);
     }
 }
