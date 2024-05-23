@@ -14,17 +14,24 @@ class SolicitudAmbienteSeeder extends Seeder
      */
     public function run()
     {
-        $usuario = DB::table('usuarios')->orderBy('id')->first();
+        $docente = DB::table('docentes')
+            ->orderBy('id')
+            ->first();
         $horario_disponible = DB::table('horarios_disponibles')
+            ->orderBy('id')
+            ->first();
+        $grupo = DB::table('grupos')
             ->orderBy('id')
             ->first();
         DB::table('solicitudes_ambientes')->insert([
             [
-                'usuario_id' => $usuario->id,
+                'docente_id' => $docente->id,
                 'horario_disponible_id' => $horario_disponible->id,
+                'grupo_id' => $grupo->id,
                 'capacidad' => 50,
-                'materia' => 'Taller de redes avanzadas',
                 'estado' => 'solicitado',
+                'tipo_reserva' => 'Examen Mesa',
+                'prioridad' => 0,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]

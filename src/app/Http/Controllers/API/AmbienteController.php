@@ -38,7 +38,7 @@ class AmbienteController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  GuardarAmbienteRequest  $request
      * @return \Illuminate\Http\Response
      */
     public function store(GuardarAmbienteRequest $request)

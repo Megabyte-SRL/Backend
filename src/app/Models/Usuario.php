@@ -12,6 +12,18 @@ use Laravel\Sanctum\HasApiTokens;
 class Usuario extends Authenticatable
 {
     use HasApiTokens, HasFactory, SoftDeletes, Notifiable;
-    protected $fillable = ['nombre', 'apellido', 'email', 'password', 'rol'];
-    protected $hidden = ['password', 'remember_token'];
+    protected $fillable = [
+        'email',
+        'password',
+        'rol'
+    ];
+    protected $hidden = [
+        'password',
+        'remember_token'
+    ];
+
+    public function docente()
+    {
+        return $this->hasONe(Docente::class, 'usuario_id');
+    }
 }

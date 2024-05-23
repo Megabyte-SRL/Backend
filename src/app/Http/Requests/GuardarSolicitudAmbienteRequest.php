@@ -25,8 +25,10 @@ class GuardarSolicitudAmbienteRequest extends FormRequest
     {
         return [
             'horarioDisponibleId' => 'required',
+            'grupoId' => 'required|integer',
             'capacidad' => 'required|integer',
-            'materia' => 'required|string',
+            'tipoReserva' => 'required|string',
+            'docentes' => 'nullable|array',
         ];
     }
 }

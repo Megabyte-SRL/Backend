@@ -18,6 +18,9 @@ class DatabaseSeeder extends Seeder
         $this->call(HorarioDisponibleSeeder::class);
         $this->call(UbicacionAmbienteSeeder::class);
         $this->call(UsuarioSeeder::class);
+        $this->call(DocenteSeeder::class);
+        $this->call(MateriaSeeder::class);
+        $this->call(GrupoSeeder::class);
         $this->call(SolicitudAmbienteSeeder::class);
     }
 }

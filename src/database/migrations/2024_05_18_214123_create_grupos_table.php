@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateHorariosDisponiblesTable extends Migration
+class CreateGruposTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,15 @@ class CreateHorariosDisponiblesTable extends Migration
      */
     public function up()
     {
-        Schema::create('horarios_disponibles', function (Blueprint $table) {
+        Schema::create('grupos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('ambiente_id')
-                  ->constrained()
+            $table->foreignId('docente_id')
+                  ->constrained('docentes')
                   ->onDelete('cascade');
-            $table->date('fecha');
-            $table->time('hora_inicio');
-            $table->time('hora_fin');
+            $table->foreignId('materia_id')
+                  ->constrained('grupos')
+                  ->onDelete('cascade');
+            $table->string('grupo');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -33,6 +34,6 @@ class CreateHorariosDisponiblesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('horarios_disponibles');
+        Schema::dropIfExists('grupos');
     }
 }
