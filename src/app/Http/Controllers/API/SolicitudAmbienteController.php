@@ -72,7 +72,8 @@ class SolicitudAmbienteController extends Controller
      */
     public function list()
     {
-        $solicitudes = SolicitudAmbiente::with([
+        $solicitudes = SolicitudAmbiente::where('estado', '<>', 'reservado')
+        ->with([
             'docente',
             'horarioDisponible' => function($query) {
                 $query->with('ambiente');
@@ -83,5 +84,23 @@ class SolicitudAmbienteController extends Controller
             'docentes'
         ])->get();
         return SolicitudesAmbientesListResource::collection($solicitudes);
+    }
+
+    /**
+     * Registramos una solicitud de reserva como reservado.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function reservar($solicitud_id)
+    {
+        $solicitud = SolicitudAmbiente::findOrFail($solicitud_id);
+
+        $solicitud->estado = 'reservado';
+        $solicitud->save();
+
+        return response()->json([
+            'msg' => 'Ambiente reservado exitosamente',
+            'data' => $solicitud
+        ], 200);
     }
 }
