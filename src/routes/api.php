@@ -30,6 +30,7 @@ Route::post('horariosDisponibles', [HorarioDisponibleController::class, 'guardar
 Route::get('list/horariosDisponibles', [HorarioDisponibleController::class, 'list']);
 Route::post('horariosMateriasArchivo', [HorarioMateriasController::class, 'subirArchivo']);
 Route::get('list/docentesMateria/{materia_id}', [DocenteController::class, 'obtenerDocentesPorMateria']);
+Route::get('list/solicitudesAmbientes', [SolicitudAmbienteController::class, 'list']);
 
 Route::middleware('auth:sanctum')->group(function() {
     Route::get('list/materiasGrupos', [DocenteController::class, 'obtenerMateriasGrupos']);
