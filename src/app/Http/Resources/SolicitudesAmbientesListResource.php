@@ -22,7 +22,9 @@ class SolicitudesAmbientesListResource extends JsonResource
             'capacidad' => $this->capacidad,
             'estado' => $this->estado,
             'tipoReserva' => $this->tipoReserva,
-            'docentes' => DocentesListResource::collection($this->docentes)
+            'docentes' => DocentesListResource::collection($this->docentes),
+            'prioridad' => $this->prioridad,
+            'fechaSolicitud' => $this->created_at->format('d-m-Y H:i:s')
         ];
     }
 }
