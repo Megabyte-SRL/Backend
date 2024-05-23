@@ -63,8 +63,6 @@ class UsuarioController extends Controller
     {
         try {
             Usuario::create([
-                'nombre' => $request->input('nombre'),
-                'apellido' => $request->input('apellido'),
                 'email' => $request->input('email'),
                 'password' => Hash::make($request->input('password')),
                 'rol' => $request->rol,

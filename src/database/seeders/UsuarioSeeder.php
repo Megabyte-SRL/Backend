@@ -17,8 +17,6 @@ class UsuarioSeeder extends Seeder
     {
         DB::table('usuarios')->insert([
             [
-                'nombre' => 'admin',
-                'apellido' => 'admin',
                 'email' => 'admin@fcyt.umss.edu',
                 'password' => Hash::make('password1234'),
                 'rol' => 'admin',
@@ -26,9 +24,21 @@ class UsuarioSeeder extends Seeder
                 'updated_at' => now()
             ],
             [
-                'nombre' => 'Jose Enrique',
-                'apellido' => 'Camacho Silvestre',
-                'email' => 'jose.camacho@gmail.com',
+                'email' => 'americo.fiorilo@fcyt.umss.edu',
+                'password' => Hash::make('password1234'),
+                'rol' => 'docente',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'email' => 'maria.cespedes@fcyt.umss.edu',
+                'password' => Hash::make('password1234'),
+                'rol' => 'docente',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'email' => 'leticia.blanco@fcyt.umss.edu',
                 'password' => Hash::make('password1234'),
                 'rol' => 'docente',
                 'created_at' => now(),

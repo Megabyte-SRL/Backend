@@ -4,113 +4,63 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GuardarSolicitudAmbienteRequest;
+use App\Models\Docente;
+use App\Models\DocenteSolicitud;
 use App\Models\SolicitudAmbiente;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SolicitudAmbienteController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\SolicitudAmbiente  $solicitudAmbiente
-     * @return \Illuminate\Http\Response
-     */
-    public function show(SolicitudAmbiente $solicitudAmbiente)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\SolicitudAmbiente  $solicitudAmbiente
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(SolicitudAmbiente $solicitudAmbiente)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\SolicitudAmbiente  $solicitudAmbiente
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, SolicitudAmbiente $solicitudAmbiente)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\SolicitudAmbiente  $solicitudAmbiente
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(SolicitudAmbiente $solicitudAmbiente)
-    {
-        //
-    }
-
-    /**
      * Registrar solicitud de ambiente.
+     *
+     * @param GuardarSolicitudAmbienteRequest $request
      */
     public function guardarSolicitudAmbiente(GuardarSolicitudAmbienteRequest $request)
     {
+        DB::beginTransaction();
         try {
-            SolicitudAmbiente::create([
-                'usuario_id' => Auth::id(),
+            $user = Auth::user();
+            $docente = Docente::where('usuario_id', $user->id)->first();
+            if (!$docente) {
+                return response()->json(['msg' => 'Docente no encontrado'], 404);
+            }
+
+            $docentes = $request->input('docentes', []);
+            if (empty($docentes)) {
+                $docentes[] = $docente->id;
+            }
+            $solicitudAmbiente = SolicitudAmbiente::create([
+                'docente_id' => $docente->id,
                 'horario_disponible_id' => $request->input('horarioDisponibleId'),
                 'capacidad' => $request->input('capacidad'),
-                'materia' => $request->input('materia'),
+                'grupo_id' => $request->input('grupoId'),
                 'estado' => 'solicitado',
+                'tipo_reserva' => $request->input('tipoReserva'),
             ]);
 
+            foreach ($docentes as $docenteId) {
+                DocenteSolicitud::create([
+                    'docente_id' => $docenteId,
+                    'solicitud_ambiente_id' => $solicitudAmbiente->id,
+                ]);
+            }
+
+            DB::commit();
+            
             return response()->json([
-                'status' => 201,
                 'res' => true,
                 'msg' => 'Solicitud registrada exitosamente'
-            ], 201);
+            ], Response::HTTP_OK);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
-                'status' => 500,
                 'res' => false,
                 'msg' => $e->getMessage(),
-            ], 500);
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

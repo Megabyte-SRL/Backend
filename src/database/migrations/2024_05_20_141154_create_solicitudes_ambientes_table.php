@@ -15,15 +15,19 @@ class CreateSolicitudesAmbientesTable extends Migration
     {
         Schema::create('solicitudes_ambientes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('usuario_id')
-                  ->constrained()
+            $table->foreignId('docente_id')
+                  ->constrained('docentes')
                   ->onDelete('cascade');
             $table->foreignId('horario_disponible_id')
                   ->constrained('horarios_disponibles')
                   ->onDelete('cascade');
+            $table->foreignId('grupo_id')
+                  ->constrained('grupos')
+                  ->onDelete('cascade');
             $table->integer('capacidad');
-            $table->string('materia');
-            $table->string('estado');
+            $table->enum('estado', ['disponible', 'solicitado', 'reservado'])
+                  ->default('disponible');
+            $table->string('tipo_reserva');
             $table->string('razon_rechazo')->nullable();
             $table->integer('prioridad')->default(0);
             $table->timestamps();
