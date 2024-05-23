@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\SolicitudesAmbientesListResource;
 use App\Http\Requests\GuardarSolicitudAmbienteRequest;
 use App\Models\Docente;
 use App\Models\DocenteSolicitud;
@@ -62,5 +63,25 @@ class SolicitudAmbienteController extends Controller
                 'msg' => $e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * Listamos todos las solicitudes realizadas.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function list()
+    {
+        $solicitudes = SolicitudAmbiente::with([
+            'docente',
+            'horarioDisponible' => function($query) {
+                $query->with('ambiente');
+            },
+            'grupo' => function($query) {
+                $query->with(['docente', 'materia']);
+            },
+            'docentes'
+        ])->get();
+        return SolicitudesAmbientesListResource::collection($solicitudes);
     }
 }

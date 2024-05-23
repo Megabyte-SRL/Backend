@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class AmbienteShowResource extends JsonResource
+class HorarioDisponibleShowResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,9 +16,10 @@ class AmbienteShowResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'nombre' => $this->nombre,
-            'descripcion' => $this->descripcion,
-            'capacidad' => $this->capacidad,
+            'fecha' => $this->fecha,
+            'ambiente' => $this->ambiente->nombre,
+            'horario' => $this->hora_inicio . ' - ' . $this->hora_fin,
+            'capacidad' => $this->ambiente->capacidad,
         ];
     }
 }
