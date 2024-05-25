@@ -12,37 +12,6 @@ use Illuminate\Support\Facades\DB;
 class HorarioDisponibleController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
      * Guardar una lista de horarios.
      */
     public function guardarHorasDisponibles(GuardarHorariosAmbienteRequest $request)
@@ -76,58 +45,78 @@ class HorarioDisponibleController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\HorarioDisponible  $horarioDisponible
-     * @return \Illuminate\Http\Response
-     */
-    public function show(HorarioDisponible $horarioDisponible)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\HorarioDisponible  $horarioDisponible
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(HorarioDisponible $horarioDisponible)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\HorarioDisponible  $horarioDisponible
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, HorarioDisponible $horarioDisponible)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\HorarioDisponible  $horarioDisponible
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(HorarioDisponible $horarioDisponible)
-    {
-        //
-    }
-
-    /**
      * Listamos todos los horarios disponibles.
      *
      * @return \Illuminate\Http\Response
      */
-    public function list()
+    public function list(Request $request)
     {
-        $horarios = HorarioDisponible::with(['ambiente', 'solicitudesAmbientes'])->get();
+        $query = HorarioDisponible::with(['ambiente', 'solicitudesAmbientes']);
+
+        // Search
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('fecha', 'LIKE', "%{$search}%")
+                    ->orWhere('hora_inicio', 'LIKE', "%{$search}%")
+                    ->orWhere('hora_fin', 'LIKE', "%{$search}%")
+                    ->orWhereHas('ambiente', function ($q) use ($search) {
+                        $q->where('nombre', 'LIKE', "%{$search}%")
+                          ->orWhere('capacidad', 'LIKE', "%{$search}%");
+                    });
+            });
+        }
+
+        // Sorting
+        if ($request->has('sortField') && $request->has('sortDirection')) {
+            $sortField = $request->input('sortField');
+            $sortDirection = $request->input('sortDirection');
+
+            // Validate sort direction
+            if (in_array(strtolower($sortDirection), ['asc', 'desc'])) {
+                if ($sortField == 'ambiente') {
+                    $query->join('ambientes', 'horarios_disponibles.ambiente_id', '=', 'ambientes.id')
+                          ->orderBy('ambientes.nombre', $sortDirection)
+                          ->select('horarios_disponibles.*');
+                } elseif ($sortField == 'capacidad') {
+                    $query->join('ambientes', 'horarios_disponibles.ambiente_id', '=', 'ambientes.id')
+                            ->orderBy('ambientes.capacidad', $sortDirection)
+                            ->select('horarios_disponibles.*');
+                } elseif ($sortField == 'horario') {
+                    $query->orderByRaw("CONCAT(hora_inicio, ' - ', hora_fin) $sortDirection");
+                } else {
+                    $query->orderBy($sortField, $sortDirection);
+                }
+            } else {
+                return response()->json(['error' => 'Invalid sort direction'], 400);
+            }
+        }
+
+        // Generic Filtering
+        foreach ($request->all() as $key => $value) {
+            if (in_array($key, ['search', 'sortField', 'sortDirection', 'perPage', 'page']) || empty($value)) {
+                continue;
+            }
+
+            // Check if the filter is for a related table
+            if ($key === 'ambiente') {
+                $query->whereHas('ambiente', function ($q) use ($value) {
+                    $q->where('nombre', $value);
+                });
+            } elseif ($key === 'capacidad') {
+                // Adjust the query to join the related table and apply the filter
+                $query->whereHas('ambiente', function ($q) use ($value) {
+                    $q->where('capacidad', $value);
+                });
+            } else {
+                $query->where($key, $value);
+            }
+        }
+
+        // Pagination
+        $perPage = $request->input('perPage', 10);
+        $horarios = $query->paginate($perPage);
+
         return HorariosDisponiblesListResource::collection($horarios);
     }
 }
