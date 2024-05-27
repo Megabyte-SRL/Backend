@@ -34,6 +34,8 @@ Route::get('list/solicitudesAmbientes', [SolicitudAmbienteController::class, 'li
 Route::post('reservarAmbiente/{solicitud_id}', [SolicitudAmbienteController::class, 'reservar']);
 
 Route::middleware('auth:sanctum')->group(function() {
+    Route::get('informacionUsuario', [UsuarioController::class, 'obtenerInformacion']);
+    Route::post('actualizarUsuario', [UsuarioController::class, 'actualizarInformacion']);
     Route::get('list/materiasGrupos', [DocenteController::class, 'obtenerMateriasGrupos']);
     Route::post('solicitudesAmbientes', [SolicitudAmbienteController::class, 'guardarSolicitudAmbiente']);
 });

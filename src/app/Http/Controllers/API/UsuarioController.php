@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ActualizarUsuarioRequest;
 use App\Http\Requests\IniciarSesionUsuarioRequest;
 use App\Http\Requests\GuardarUsuarioRequest;
 use App\Http\Resources\UserAuthenticatedShowResource;
+use App\Http\Resources\UsuarioShowResource;
 use App\Models\Usuario;
+use App\Models\Docente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -30,27 +33,13 @@ class UsuarioController extends Controller
         }
         $token = $user->createToken('authToken')->plainTextToken;
         $user->token = $token;
+        if ($user->rol === 'admin') {
+            $user->nombre = 'Administrador Administrador';
+        } elseif ($user->rol === 'docente') {
+            $docente = Docente::where('usuario_id', $user->id)->first();
+            $user->nombre = $docente->nombre . ' ' . $docente->apellido;
+        }
         return UserAuthenticatedShowResource::make($user);
-    }
-
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -83,47 +72,41 @@ class UsuarioController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Obtener información de usuario
      *
-     * @param  \App\Models\Usuario  $usuario
-     * @return \Illuminate\Http\Response
      */
-    public function show(Usuario $usuario)
+    public function obtenerInformacion()
     {
-        //
+        $usuario = Auth::user();
+        return new UsuarioShowResource($usuario);
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Usuario  $usuario
-     * @return \Illuminate\Http\Response
+     * Actualizar información de usuario
      */
-    public function edit(Usuario $usuario)
+    public function actualizarInformacion(ActualizarUsuarioRequest $request)
     {
-        //
-    }
+        $user = Auth::user();
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Usuario  $usuario
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Usuario $usuario)
-    {
-        //
-    }
+        // Retrieve the validated input data
+        $validatedData = $request->validated();
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Usuario  $usuario
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Usuario $usuario)
-    {
-        //
+        // Update user data in the 'usuarios' table
+        $user->email = $validatedData['email'];
+        $user->password = Hash::make($validatedData['password']);
+        $user->save();
+
+        // If the user is a 'docente', update the 'docentes' table
+        if ($user->rol === 'docente') {
+            $docente = Docente::where('usuario_id', $user->id)->first();
+            if (!$docente) {
+                return response()->json(['message' => 'Docente not found'], 404);
+            }
+            $docente->nombre = $validatedData['nombre'];
+            $docente->apellido = $validatedData['apellido'];
+            $docente->save();
+        }
+
+        return response()->json(['message' => 'Información actualizada correctamente'], 200);
     }
 }
