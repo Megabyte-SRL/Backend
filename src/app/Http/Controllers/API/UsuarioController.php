@@ -107,6 +107,6 @@ class UsuarioController extends Controller
             $docente->save();
         }
 
-        return response()->json(['message' => 'Información actualizada correctamente'], 200);
+        return response()->json(['msg' => 'Usuario actualizada correctamente'], 200);
     }
 }
