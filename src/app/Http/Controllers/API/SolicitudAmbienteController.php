@@ -97,7 +97,91 @@ class SolicitudAmbienteController extends Controller
      */
     public function list(Request $request)
     {
-        $query = SolicitudAmbiente::where('estado', '<>', 'reservado')
+        $query = SolicitudAmbiente::where('estado', '=', 'solicitado')
+            ->with([
+                'docente',
+                'horarioDisponible' => function($query) {
+                    $query->with('ambiente');
+                },
+                'grupo' => function($query) {
+                    $query->with(['docente', 'materia']);
+                },
+                'docentes'
+            ]);
+
+        // Search
+        if ($request->has('search') && !empty($request->input('search'))) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->whereHas('horarioDisponible', function($q) use ($search) {
+                    $q->where('fecha', 'LIKE', "%{$search}%")
+                      ->orWhere('hora_inicio', 'LIKE', "%{$search}%")
+                      ->orWhere('hora_fin', 'LIKE', "%{$search}%");
+                })
+                ->orWhereHas('horarioDisponible.ambiente', function($q) use ($search) {
+                    $q->where('nombre', 'LIKE', "%{$search}%");
+                })
+                ->orWhere('capacidad', 'LIKE', "%{$search}%")
+                ->orWhere('estado', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Sorting
+        if ($request->has('sortField') && $request->has('sortDirection')) {
+            $sortField = $request->input('sortField');
+            $sortDirection = $request->input('sortDirection');
+
+            // Validate sort direction
+            if (in_array(strtolower($sortDirection), ['asc', 'desc'])) {
+                if ($sortField == 'ambiente') {
+                    $query->join('horarios_disponibles', 'solicitudes_ambientes.horario_disponible_id', '=', 'horarios_disponibles.id')
+                            ->join('ambientes', 'horarios_disponibles.ambiente_id', '=', 'ambientes.id')
+                            ->orderBy('ambientes.nombre', $sortDirection)
+                            ->select('solicitudes_ambientes.*');
+                } elseif ($sortField == 'capacidadAmbiente') {
+                    $query->join('horarios_disponibles', 'solicitudes_ambientes.horario_disponible_id', '=', 'horarios_disponibles.id')
+                            ->join('ambientes', 'horarios_disponibles.ambiente_id', '=', 'ambientes.id')
+                            ->orderBy('ambientes.capacidad', $sortDirection)
+                            ->select('solicitudes_ambientes.*');
+                } elseif ($sortField == 'horario') {
+                    $query->join('horarios_disponibles', 'solicitudes_ambientes.horario_disponible_id', '=', 'horarios_disponibles.id')
+                            ->orderByRaw("CONCAT(hora_inicio, ' - ', hora_fin) $sortDirection")
+                            ->select('solicitudes_ambientes.*');
+                } elseif ($sortField == 'fecha') {
+                    $query->join('horarios_disponibles', 'solicitudes_ambientes.horario_disponible_id', '=', 'horarios_disponibles.id')
+                            ->orderBy('horarios_disponibles.fecha', $sortDirection)
+                            ->select('solicitudes_ambientes.*');
+                } else {
+                    $query->orderBy($sortField, $sortDirection);
+                }
+            } else {
+                return response()->json(['error' => 'Invalid sort direction'], 400);
+            }
+        }
+
+        // Generic Filtering
+        foreach ($request->all() as $key => $value) {
+            if (in_array($key, ['search', 'sortField', 'sortDirection', 'perPage', 'page']) || empty($value)) {
+                continue;
+            }
+            $query->where($key, $value);
+        }
+
+        // Paginación
+        $perPage = $request->input('perPage', 10);
+        $solicitudes = $query->paginate($perPage);
+
+        return SolicitudesAmbientesListResource::collection($solicitudes);
+    }
+
+    /**
+     * Listamos todas las notificaciones de sugerencias de ambientes para un docuente.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function notificacionesSugerencias(Request $request)
+    {
+        $query = SolicitudAmbiente::where('estado', '=', 'sugerido')
             ->with([
                 'docente',
                 'horarioDisponible' => function($query) {
@@ -190,5 +274,63 @@ class SolicitudAmbienteController extends Controller
             'msg' => 'Ambiente reservado exitosamente',
             'data' => $solicitud
         ], 200);
+    }
+
+    public function 
+
+    public function aceptarSugerencia($solicitud_id)
+    {
+        $solicitud = SolicitudAmbiente::findOrFail($solicitud_id);
+        
+        $solicitud->estado = 'aceptado';
+        $solicitud->save();
+
+        return response()->json([
+            'msg' => 'Ambiente reservado exitosamente',
+            'data' => $solicitud
+        ], 200);
+    }
+
+    public function rechazarSugerencia($solicitud_id)
+    {
+        $solicitud = SolicitudAmbiente::findOrFail($solicitud_id);
+
+        $solicitud->estado = 'disponible';
+        $solicitud->save();
+    }
+    /**
+     * Registrar sugerencias de reserva.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function sugerirHorarios(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            foreach ($request->horariosDisponibles as $horarioId) {
+                SolicitudAmbiente::create([
+                    'docente_id' => $request->input('docenteId'),
+                    'horario_disponible_id' => $horarioId,
+                    'capacidad' => $request->input('capacidad'),
+                    'grupo_id' => $request->input('grupoId'),
+                    'estado' => 'sugerido',
+                    'tipo_reserva' => $request->input('tipoReserva'),
+                    'prioridad' => 0,
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'res' => true,
+                'msg' => 'Sugerencias registradas exitosamente'
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'res' => false,
+                'msg' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

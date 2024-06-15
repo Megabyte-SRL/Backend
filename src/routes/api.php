@@ -27,11 +27,14 @@ Route::post('ambientes-archivo', [AmbienteController::class, 'subirArchivo']);
 Route::delete('ambientes/{id}', [AmbienteController::class, 'eliminar']);
 Route::get('list/ambientes', [AmbienteController::class, 'list']);
 Route::post('horariosDisponibles', [HorarioDisponibleController::class, 'guardarHorasDisponibles']);
-Route::get('list/horariosDisponibles', [HorarioDisponibleController::class, 'list']);
+Route::get('list/horarios', [HorarioDisponibleController::class, 'list']);
+Route::get('list/horariosDisponibles', [HorarioDisponibleController::class, 'horariosDisponibles']);
 Route::post('horariosMateriasArchivo', [HorarioMateriasController::class, 'subirArchivo']);
 Route::get('list/docentesMateria/{materia_id}', [DocenteController::class, 'obtenerDocentesPorMateria']);
 Route::get('list/solicitudesAmbientes', [SolicitudAmbienteController::class, 'list']);
+Route::get('list/notificacionesSugerencias', [SolicitudAmbienteController::class, 'notificacionesSugerencias']);
 Route::post('reservarAmbiente/{solicitud_id}', [SolicitudAmbienteController::class, 'reservar']);
+Route::post('sugerirAmbientes', [SolicitudAmbienteController::class, 'sugerirHorarios']);
 
 Route::middleware('auth:sanctum')->group(function() {
     Route::get('informacionUsuario', [UsuarioController::class, 'obtenerInformacion']);

@@ -25,7 +25,7 @@ class CreateSolicitudesAmbientesTable extends Migration
                   ->constrained('grupos')
                   ->onDelete('cascade');
             $table->integer('capacidad');
-            $table->enum('estado', ['disponible', 'solicitado', 'reservado'])
+            $table->enum('estado', ['disponible', 'solicitado', 'sugerido', 'reservado', 'rechazado'])
                   ->default('disponible');
             $table->string('tipo_reserva');
             $table->string('razon_rechazo')->nullable();
