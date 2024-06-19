@@ -20,6 +20,6 @@ class SolicitudStatusChange extends Model
     // Define any relationships if necessary
     public function solicitudAmbiente()
     {
-        return $this->belongsTo(SolicitudAmbiente::class);
+        return $this->belongsTo(SolicitudAmbiente::class)->withTrashed();
     }
 }

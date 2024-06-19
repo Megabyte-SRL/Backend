@@ -43,4 +43,5 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::post('rechazarSolicitud/{solicitud_id}', [SolicitudAmbienteController::class, 'rechazarSolicitud']);
     Route::post('aprobarSugerencia/{solicitud_id}', [SolicitudAmbienteController::class, 'aprobarSugerencia']);
     Route::post('rechazarSugerencia/{solicitud_id}', [SolicitudAmbienteController::class, 'rechazarSugerencia']);
+    Route::get('list/solicitudStatusChanges', [SolicitudAmbienteController::class, 'listSolicitudesStatusChanges']);
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\SolicitudesAmbientesListResource;
+use App\Http\Resources\SolicitudStatusChangeResource;
 use App\Http\Requests\GuardarSolicitudAmbienteRequest;
 use App\Models\Docente;
 use App\Models\DocenteSolicitud;
@@ -372,4 +373,107 @@ class SolicitudAmbienteController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    public function listSolicitudesStatusChanges(Request $request)
+    {
+        $user = Auth::user();
+
+        $query = SolicitudStatusChange::with([
+            'solicitudAmbiente.docente',
+            'solicitudAmbiente.horarioDisponible.ambiente',
+            'solicitudAmbiente.grupo.docente',
+            'solicitudAmbiente.grupo.materia'
+        ]);
+
+        // Apply filters based on the request parameters
+        if ($user->rol == 'docente') {
+            $docente = Docente::where('usuario_id', $user->id)->first();
+            if ($docente) {
+                $query->whereHas('solicitudAmbiente', function ($q) use ($docente) {
+                    $q->where('docente_id', $docente->id);
+                });
+            }
+        }
+
+        // Apply the same filters as in listSolicitudes
+        foreach ($request->all() as $key => $value) {
+            if (in_array($key, ['search', 'sortField', 'sortDirection', 'perPage', 'page']) || empty($value)) {
+                continue;
+            }
+            if ($key === 'estado') {
+                $query->whereHas('solicitudAmbiente.horarioDisponible', function ($q) use ($value) {
+                    $q->whereIn('estado', explode(',', $value));
+                });
+            } else {
+                $query->whereHas('solicitudAmbiente', function ($q) use ($key, $value) {
+                    $q->where($key, $value);
+                });
+            }
+        }
+
+        // Apply search filter
+        if ($request->has('search') && !empty($request->input('search'))) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('solicitudAmbiente.horarioDisponible', function ($q) use ($search) {
+                    $q->where('fecha', 'LIKE', "%{$search}%")
+                        ->orWhere('hora_inicio', 'LIKE', "%{$search}%")
+                        ->orWhere('hora_fin', 'LIKE', "%{$search}%");
+                })
+                    ->orWhereHas('solicitudAmbiente.horarioDisponible.ambiente', function ($q) use ($search) {
+                        $q->where('nombre', 'LIKE', "%{$search}%");
+                    })
+                    ->orWhere('estado_antiguo', 'LIKE', "%{$search}%")
+                    ->orWhere('estado_nuevo', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Apply sorting
+        if ($request->has('sortField') && $request->has('sortDirection')) {
+            $sortField = $request->input('sortField');
+            $sortDirection = $request->input('sortDirection');
+
+            // Validate sort direction
+            if (in_array(strtolower($sortDirection), ['asc', 'desc'])) {
+                if ($sortField == 'ambiente') {
+                    $query->join('solicitudes_ambientes', 'solicitud_status_changes.solicitud_ambiente_id', '=', 'solicitudes_ambientes.id')
+                        ->join('horarios_disponibles', 'solicitudes_ambientes.horario_disponible_id', '=', 'horarios_disponibles.id')
+                        ->join('ambientes', 'horarios_disponibles.ambiente_id', '=', 'ambientes.id')
+                        ->orderBy('ambientes.nombre', $sortDirection)
+                        ->select('solicitud_status_changes.*');
+                } elseif ($sortField == 'capacidadAmbiente') {
+                    $query->join('solicitudes_ambientes', 'solicitud_status_changes.solicitud_ambiente_id', '=', 'solicitudes_ambientes.id')
+                        ->join('horarios_disponibles', 'solicitudes_ambientes.horario_disponible_id', '=', 'horarios_disponibles.id')
+                        ->join('ambientes', 'horarios_disponibles.ambiente_id', '=', 'ambientes.id')
+                        ->orderBy('ambientes.capacidad', $sortDirection)
+                        ->select('solicitud_status_changes.*');
+                } elseif ($sortField == 'capacidadReserva') {
+                    $query->join('solicitudes_ambientes', 'solicitud_status_changes.solicitud_ambiente_id', '=', 'solicitudes_ambientes.id')
+                        ->orderBy('solicitudes_ambientes.capacidad', $sortDirection)
+                        ->select('solicitud_status_changes.*');
+                } elseif ($sortField == 'horario') {
+                    $query->join('solicitudes_ambientes', 'solicitud_status_changes.solicitud_ambiente_id', '=', 'solicitudes_ambientes.id')
+                        ->join('horarios_disponibles', 'solicitudes_ambientes.horario_disponible_id', '=', 'horarios_disponibles.id')
+                        ->orderByRaw("CONCAT(horarios_disponibles.hora_inicio, ' - ', horarios_disponibles.hora_fin) $sortDirection")
+                        ->select('solicitud_status_changes.*');
+                } elseif ($sortField == 'fecha') {
+                    $query->join('solicitudes_ambientes', 'solicitud_status_changes.solicitud_ambiente_id', '=', 'solicitudes_ambientes.id')
+                        ->join('horarios_disponibles', 'solicitudes_ambientes.horario_disponible_id', '=', 'horarios_disponibles.id')
+                        ->orderBy('horarios_disponibles.fecha', $sortDirection)
+                        ->select('solicitud_status_changes.*');
+                } else {
+                    $query->orderBy($sortField, $sortDirection);
+                }
+            } else {
+                return response()->json(['error' => 'Invalid sort direction'], 400);
+            }
+        }
+
+        // Pagination
+        $perPage = $request->input('perPage', 10);
+        $statusChanges = $query->paginate($perPage);
+
+        return SolicitudStatusChangeResource::collection($statusChanges);
+    }
+
 }
