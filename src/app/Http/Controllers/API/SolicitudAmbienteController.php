@@ -191,4 +191,14 @@ class SolicitudAmbienteController extends Controller
             'data' => $solicitud
         ], 200);
     }
+    public function obtenerSolicitud($id)
+    {
+        $solicitud = SolicitudAmbiente::find($id);
+        if (!$solicitud) {
+            return response()->json(['message' => 'Solicitud no encontrada'], 404);
+        }
+
+        return response()->json($solicitud, 200);
+    }
+
 }
