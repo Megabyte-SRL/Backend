@@ -21,6 +21,8 @@ class CreateHorariosDisponiblesTable extends Migration
             $table->date('fecha');
             $table->time('hora_inicio');
             $table->time('hora_fin');
+            $table->enum('estado', ['disponible', 'solicitado', 'sugerido', 'aceptado', 'reservado'])
+                  ->default('disponible');
             $table->timestamps();
             $table->softDeletes();
         });

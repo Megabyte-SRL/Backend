@@ -14,18 +14,13 @@ class HorariosDisponiblesListResource extends JsonResource
      */
     public function toArray($request)
     {
-        $estado = 'disponible';
-        if ($this->solicitudesAmbientes->isNotEmpty()) {
-            $estado = $this->solicitudesAmbientes->first()->estado;
-        }
-
         return [
             'id' => $this->id,
             'fecha' => $this->fecha,
             'ambiente' => $this->ambiente->nombre,
             'horario' => $this->hora_inicio . ' - ' . $this->hora_fin,
             'capacidad' => $this->ambiente->capacidad,
-            'estado' => $estado
+            'estado' => $this->estado
         ];
     }
 }

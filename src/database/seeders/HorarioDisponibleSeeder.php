@@ -22,6 +22,7 @@ class HorarioDisponibleSeeder extends Seeder
                 'fecha' => Carbon::parse('2023-01-01'),
                 'hora_inicio' => '08:00:00',
                 'hora_fin' => '10:00:00',
+                'estado' => 'solicitado'
             ]
         ]);
     }

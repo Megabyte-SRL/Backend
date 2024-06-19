@@ -20,7 +20,7 @@ class SolicitudesAmbientesListResource extends JsonResource
             'horarioDisponible' => new HorarioDisponibleShowResource($this->horarioDisponible),
             'grupo' => new GrupoShowResource($this->grupo),
             'capacidad' => $this->capacidad,
-            'estado' => $this->estado,
+            'estado' => $this->horarioDisponible["estado"],
             'tipoReserva' => $this->tipo_reserva,
             'docentes' => DocentesListResource::collection($this->docentes),
             'prioridad' => $this->prioridad,
