@@ -10,10 +10,12 @@ use App\Models\DocenteSolicitud;
 use App\Models\HorarioDisponible;
 use App\Models\SolicitudAmbiente;
 use App\Models\SolicitudStatusChange;
+use App\Mail\EnviarCorreo;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class SolicitudAmbienteController extends Controller
 {
@@ -120,6 +122,12 @@ class SolicitudAmbienteController extends Controller
             $solicitud->delete();
 
             DB::commit();
+
+            $docente = Docente::findOrFail($solicitud->docente_id);
+            if ($docente->usuario) {
+                $usuario = $docente->usuario;
+                Mail::to($usuario->email)->send(new EnviarCorreo($solicitud));
+            }
 
             return response()->json([
                 'msg' => 'Solicitud aprobada exitosamente',
