@@ -29,7 +29,6 @@ class SolicitudAmbienteSeeder extends Seeder
                 'horario_disponible_id' => $horario_disponible->id,
                 'grupo_id' => $grupo->id,
                 'capacidad' => 50,
-                'estado' => 'solicitado',
                 'tipo_reserva' => 'Examen Mesa',
                 'prioridad' => 0,
                 'created_at' => now(),
