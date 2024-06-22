@@ -24,6 +24,7 @@ class HorarioDisponibleController extends Controller
                     'fecha' => $request->fecha,
                     'hora_inicio' => $horarioData['horaInicio'],
                     'hora_fin' => $horarioData['horaFin'],
+                    'estado' => 'disponible'
                 ]);
             }
 
@@ -45,14 +46,25 @@ class HorarioDisponibleController extends Controller
     }
 
     /**
-     * Listamos todos los horarios disponibles.
-     *
-     * @return \Illuminate\Http\Response
+     * Listar todos los horarios disponibles.
      */
     public function list(Request $request)
     {
-        $query = HorarioDisponible::with(['ambiente', 'solicitudesAmbientes']);
+        $query = HorarioDisponible::with(['ambiente']);
 
+        $this->applyFilters($query, $request);
+
+        $perPage = $request->input('perPage', 10);
+        $horarios = $query->paginate($perPage);
+
+        return HorariosDisponiblesListResource::collection($horarios);
+    }
+
+    /**
+     * Aplicar filtros y ordenamiento a la consulta.
+     */
+    private function applyFilters(&$query, $request)
+    {
         // Search
         if ($request->has('search')) {
             $search = $request->input('search');
@@ -72,7 +84,6 @@ class HorarioDisponibleController extends Controller
             $sortField = $request->input('sortField');
             $sortDirection = $request->input('sortDirection');
 
-            // Validate sort direction
             if (in_array(strtolower($sortDirection), ['asc', 'desc'])) {
                 if ($sortField == 'ambiente') {
                     $query->join('ambientes', 'horarios_disponibles.ambiente_id', '=', 'ambientes.id')
@@ -84,11 +95,13 @@ class HorarioDisponibleController extends Controller
                             ->select('horarios_disponibles.*');
                 } elseif ($sortField == 'horario') {
                     $query->orderByRaw("CONCAT(hora_inicio, ' - ', hora_fin) $sortDirection");
+                } elseif ($sortField == 'estado') {
+                    $query->orderBy('estado', $sortDirection);
                 } else {
                     $query->orderBy($sortField, $sortDirection);
                 }
             } else {
-                return response()->json(['error' => 'Invalid sort direction'], 400);
+                response()->json(['error' => 'Invalid sort direction'], 400);
             }
         }
 
@@ -98,13 +111,14 @@ class HorarioDisponibleController extends Controller
                 continue;
             }
 
-            // Check if the filter is for a related table
-            if ($key === 'ambiente') {
+            if ($key === 'estado') {
+                $estados = explode(',', $value);
+                $query->whereIn('estado', $estados);
+            } elseif ($key === 'ambiente') {
                 $query->whereHas('ambiente', function ($q) use ($value) {
                     $q->where('nombre', $value);
                 });
             } elseif ($key === 'capacidad') {
-                // Adjust the query to join the related table and apply the filter
                 $query->whereHas('ambiente', function ($q) use ($value) {
                     $q->where('capacidad', $value);
                 });
@@ -112,11 +126,5 @@ class HorarioDisponibleController extends Controller
                 $query->where($key, $value);
             }
         }
-
-        // Pagination
-        $perPage = $request->input('perPage', 10);
-        $horarios = $query->paginate($perPage);
-
-        return HorariosDisponiblesListResource::collection($horarios);
     }
 }

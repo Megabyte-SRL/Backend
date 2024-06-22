@@ -27,15 +27,24 @@ Route::post('ambientes-archivo', [AmbienteController::class, 'subirArchivo']);
 Route::delete('ambientes/{id}', [AmbienteController::class, 'eliminar']);
 Route::get('list/ambientes', [AmbienteController::class, 'list']);
 Route::post('horariosDisponibles', [HorarioDisponibleController::class, 'guardarHorasDisponibles']);
-Route::get('list/horariosDisponibles', [HorarioDisponibleController::class, 'list']);
+Route::get('list/horarios', [HorarioDisponibleController::class, 'list']);
+Route::get('list/horariosDisponibles', [HorarioDisponibleController::class, 'horariosDisponibles']);
 Route::post('horariosMateriasArchivo', [HorarioMateriasController::class, 'subirArchivo']);
 Route::get('list/docentesMateria/{materia_id}', [DocenteController::class, 'obtenerDocentesPorMateria']);
-Route::get('list/solicitudesAmbientes', [SolicitudAmbienteController::class, 'list']);
-Route::post('reservarAmbiente/{solicitud_id}', [SolicitudAmbienteController::class, 'reservar']);
+Route::post('sugerirAmbientes', [SolicitudAmbienteController::class, 'sugerirHorarios']);
 
 Route::middleware('auth:sanctum')->group(function() {
     Route::get('informacionUsuario', [UsuarioController::class, 'obtenerInformacion']);
     Route::post('actualizarUsuario', [UsuarioController::class, 'actualizarInformacion']);
     Route::get('list/materiasGrupos', [DocenteController::class, 'obtenerMateriasGrupos']);
+    Route::get('list/solicitudesAmbientes', [SolicitudAmbienteController::class, 'listSolicitudes']);
     Route::post('solicitudesAmbientes', [SolicitudAmbienteController::class, 'guardarSolicitudAmbiente']);
+    Route::post('aprobarSolicitud/{solicitud_id}', [SolicitudAmbienteController::class, 'aprobarSolicitud']);
+    Route::post('rechazarSolicitud/{solicitud_id}', [SolicitudAmbienteController::class, 'rechazarSolicitud']);
+    Route::post('aprobarSugerencia/{solicitud_id}', [SolicitudAmbienteController::class, 'aprobarSugerencia']);
+    Route::post('rechazarSugerencia/{solicitud_id}', [SolicitudAmbienteController::class, 'rechazarSugerencia']);
+    Route::get('list/solicitudStatusChanges', [SolicitudAmbienteController::class, 'listSolicitudesStatusChanges']);
 });
+
+Route::post('/solicitudes/{id}/aceptar', [SolicitudAmbienteController::class, 'aprobarSolicitud']);
+Route::post('/solicitudes/{id}/rechazar', [SolicitudAmbienteController::class, 'rechazarSolicitud']);
