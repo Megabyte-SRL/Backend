@@ -127,8 +127,9 @@ class SolicitudAmbienteController extends Controller
             $docente = Docente::findOrFail($solicitud->docente_id);
             if ($docente->usuario) {
                 $usuario = $docente->usuario;
-                Mail::to($usuario->email)->send(new EnviarCorreo($solicitud));
+                Mail::to($usuario->email)->send(new EnviarCorreo($solicitud, 'aprobada'));
             }
+            
 
             return response()->json([
                 'msg' => 'Solicitud aprobada exitosamente',
@@ -160,9 +161,17 @@ class SolicitudAmbienteController extends Controller
                 'fecha' => now(),
             ]);
 
+            $docente = Docente::findOrFail($solicitud->docente_id);
+            if ($docente->usuario) {
+                $usuario = $docente->usuario;
+                Mail::to($usuario->email)->send(new EnviarCorreo($solicitud, 'rechazada'));
+            }
+
             $solicitud->delete();
 
             DB::commit();
+
+            
 
             return response()->json([
                 'msg' => 'Solicitud rechazada exitosamente',
