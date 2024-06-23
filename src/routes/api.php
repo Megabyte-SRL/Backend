@@ -49,3 +49,6 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get('checkFecha', [FechaHabilitadaController::class, 'checkFecha']);
     Route::get('fechas', [FechaHabilitadaController::class, 'getFechas']);
 });
+
+Route::post('/solicitudes/{id}/aceptar', [SolicitudAmbienteController::class, 'aprobarSolicitud']);
+Route::post('/solicitudes/{id}/rechazar', [SolicitudAmbienteController::class, 'rechazarSolicitud']);
