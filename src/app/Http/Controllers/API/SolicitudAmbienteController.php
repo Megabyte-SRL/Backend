@@ -12,6 +12,8 @@ use App\Models\HorarioDisponible;
 use App\Models\SolicitudAmbiente;
 use App\Models\SolicitudStatusChange;
 use App\Mail\EnviarCorreo;
+use App\Jobs\DeleteSolicitudAmbiente;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -343,12 +345,13 @@ class SolicitudAmbienteController extends Controller
     {
         DB::beginTransaction();
         try {
+            $solicitudIds = [];
             foreach ($request->horariosDisponibles as $horarioId) {
                 $horarioDisponible = HorarioDisponible::findOrFail($horarioId);
                 $horarioDisponible->estado = 'sugerido';
                 $horarioDisponible->save();
 
-                SolicitudAmbiente::create([
+                $solicitud = SolicitudAmbiente::create([
                     'docente_id' => $request->input('docenteId'),
                     'horario_disponible_id' => $horarioDisponible->id,
                     'capacidad' => $request->input('capacidad'),
@@ -356,8 +359,10 @@ class SolicitudAmbienteController extends Controller
                     'tipo_reserva' => $request->input('tipoReserva'),
                     'prioridad' => 0,
                 ]);
+                $solicitudIds[] = $solicitud->id;
             }
 
+            DeleteSolicitudAmbiente::dispatch($solicitudIds)->delay(Carbon::now()->addMinutes(1));
             DB::commit();
 
             return response()->json([
