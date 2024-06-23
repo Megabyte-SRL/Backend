@@ -6,12 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\SolicitudesAmbientesListResource;
 use App\Http\Resources\SolicitudStatusChangeResource;
 use App\Http\Requests\GuardarSolicitudAmbienteRequest;
+use App\Mail\SolicitudAprobadaMailable;
+use App\Mail\SolicitudRechazadaMailable;
 use App\Models\Docente;
 use App\Models\DocenteSolicitud;
 use App\Models\HorarioDisponible;
 use App\Models\SolicitudAmbiente;
 use App\Models\SolicitudStatusChange;
-use App\Mail\EnviarCorreo;
 use App\Jobs\DeleteSolicitudAmbiente;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -129,9 +130,8 @@ class SolicitudAmbienteController extends Controller
             $docente = Docente::findOrFail($solicitud->docente_id);
             if ($docente->usuario) {
                 $usuario = $docente->usuario;
-                Mail::to($usuario->email)->send(new EnviarCorreo($solicitud, 'aprobada'));
+                Mail::to($usuario->email)->send(new SolicitudAprobadaMailable($solicitud, $docente));
             }
-            
 
             return response()->json([
                 'msg' => 'Solicitud aprobada exitosamente',
@@ -166,7 +166,7 @@ class SolicitudAmbienteController extends Controller
             $docente = Docente::findOrFail($solicitud->docente_id);
             if ($docente->usuario) {
                 $usuario = $docente->usuario;
-                Mail::to($usuario->email)->send(new EnviarCorreo($solicitud, 'rechazada'));
+                Mail::to($usuario->email)->send(new SolicitudRechazadaMailable($solicitud, $docente));
             }
 
             $solicitud->delete();
@@ -371,7 +371,7 @@ class SolicitudAmbienteController extends Controller
                 $solicitudIds[] = $solicitud->id;
             }
 
-            DeleteSolicitudAmbiente::dispatch($solicitudIds)->delay(Carbon::now()->addMinutes(1));
+            DeleteSolicitudAmbiente::dispatch($solicitudIds)->delay(Carbon::now()->addMinutes(15));
             DB::commit();
 
             return response()->json([
