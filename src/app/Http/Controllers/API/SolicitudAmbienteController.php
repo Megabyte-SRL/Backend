@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\SolicitudesAmbientesListResource;
 use App\Http\Resources\SolicitudStatusChangeResource;
 use App\Http\Requests\GuardarSolicitudAmbienteRequest;
+use App\Mail\SolicitudAprobadaMailable;
+use App\Mail\SolicitudRechazadaMailable;
 use App\Models\Docente;
 use App\Models\DocenteSolicitud;
 use App\Models\HorarioDisponible;
 use App\Models\SolicitudAmbiente;
 use App\Models\SolicitudStatusChange;
-use App\Mail\EnviarCorreo;
+use App\Jobs\DeleteSolicitudAmbiente;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -127,9 +130,8 @@ class SolicitudAmbienteController extends Controller
             $docente = Docente::findOrFail($solicitud->docente_id);
             if ($docente->usuario) {
                 $usuario = $docente->usuario;
-                Mail::to($usuario->email)->send(new EnviarCorreo($solicitud, 'aprobada'));
+                Mail::to($usuario->email)->send(new SolicitudAprobadaMailable($solicitud, $docente));
             }
-            
 
             return response()->json([
                 'msg' => 'Solicitud aprobada exitosamente',
@@ -164,7 +166,7 @@ class SolicitudAmbienteController extends Controller
             $docente = Docente::findOrFail($solicitud->docente_id);
             if ($docente->usuario) {
                 $usuario = $docente->usuario;
-                Mail::to($usuario->email)->send(new EnviarCorreo($solicitud, 'rechazada'));
+                Mail::to($usuario->email)->send(new SolicitudRechazadaMailable($solicitud, $docente));
             }
 
             $solicitud->delete();
@@ -352,12 +354,13 @@ class SolicitudAmbienteController extends Controller
     {
         DB::beginTransaction();
         try {
+            $solicitudIds = [];
             foreach ($request->horariosDisponibles as $horarioId) {
                 $horarioDisponible = HorarioDisponible::findOrFail($horarioId);
                 $horarioDisponible->estado = 'sugerido';
                 $horarioDisponible->save();
 
-                SolicitudAmbiente::create([
+                $solicitud = SolicitudAmbiente::create([
                     'docente_id' => $request->input('docenteId'),
                     'horario_disponible_id' => $horarioDisponible->id,
                     'capacidad' => $request->input('capacidad'),
@@ -365,8 +368,10 @@ class SolicitudAmbienteController extends Controller
                     'tipo_reserva' => $request->input('tipoReserva'),
                     'prioridad' => 0,
                 ]);
+                $solicitudIds[] = $solicitud->id;
             }
 
+            DeleteSolicitudAmbiente::dispatch($solicitudIds)->delay(Carbon::now()->addMinutes(15));
             DB::commit();
 
             return response()->json([

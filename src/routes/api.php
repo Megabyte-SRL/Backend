@@ -4,6 +4,7 @@ use App\Http\Controllers\API\AmbienteController;
 use App\Http\Controllers\API\HorarioDisponibleController;
 use App\Http\Controllers\API\HorarioMateriasController;
 use App\Http\Controllers\API\DocenteController;
+use App\Http\Controllers\API\FechaHabilitadaController;
 use App\Http\Controllers\API\SolicitudAmbienteController;
 use App\Http\Controllers\API\UsuarioController;
 use Illuminate\Http\Request;
@@ -44,7 +45,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::post('aprobarSugerencia/{solicitud_id}', [SolicitudAmbienteController::class, 'aprobarSugerencia']);
     Route::post('rechazarSugerencia/{solicitud_id}', [SolicitudAmbienteController::class, 'rechazarSugerencia']);
     Route::get('list/solicitudStatusChanges', [SolicitudAmbienteController::class, 'listSolicitudesStatusChanges']);
+    Route::post('habilitarFechas', [FechaHabilitadaController::class, 'store']);
+    Route::get('checkFecha', [FechaHabilitadaController::class, 'checkFecha']);
+    Route::get('fechas', [FechaHabilitadaController::class, 'getFechas']);
 });
-
-Route::post('/solicitudes/{id}/aceptar', [SolicitudAmbienteController::class, 'aprobarSolicitud']);
-Route::post('/solicitudes/{id}/rechazar', [SolicitudAmbienteController::class, 'rechazarSolicitud']);

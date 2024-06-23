@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\GuardarHorariosAmbienteRequest;
 use App\Http\Resources\HorariosDisponiblesListResource;
 use App\Models\HorarioDisponible;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -122,6 +123,14 @@ class HorarioDisponibleController extends Controller
                 $query->whereHas('ambiente', function ($q) use ($value) {
                     $q->where('capacidad', $value);
                 });
+            } elseif ($key === 'fechaInicio' || $key === 'fechaFin') {
+                // Apply date range filtering
+                if ($request->has('fechaInicio') && $request->has('fechaFin')) {
+                    $fechaInicio = Carbon::parse($request->input('fechaInicio'));
+                    $fechaFin = Carbon::parse($request->input('fechaFin'));
+
+                    $query->whereBetween('fecha', [$fechaInicio, $fechaFin]);
+                }
             } else {
                 $query->where($key, $value);
             }
