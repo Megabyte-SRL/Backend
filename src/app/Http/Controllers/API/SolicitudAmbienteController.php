@@ -120,16 +120,18 @@ class SolicitudAmbienteController extends Controller
                 'fecha' => now(),
             ]);
 
-            $solicitud->delete();
-
-            DB::commit();
-
-            $docente = Docente::findOrFail($solicitud->docente_id);
+        // Obtener todos los docentes asociados a la solicitud
+        $docenteSolicitudes = DocenteSolicitud::where('solicitud_ambiente_id', $solicitud->id)->get();
+        foreach ($docenteSolicitudes as $docenteSolicitud) {
+            $docente = Docente::findOrFail($docenteSolicitud->docente_id);
             if ($docente->usuario) {
                 $usuario = $docente->usuario;
                 Mail::to($usuario->email)->send(new EnviarCorreo($solicitud, 'aprobada'));
             }
             
+        }
+        $solicitud->delete();
+        DB::commit();
 
             return response()->json([
                 'msg' => 'Solicitud aprobada exitosamente',
@@ -161,11 +163,15 @@ class SolicitudAmbienteController extends Controller
                 'fecha' => now(),
             ]);
 
-            $docente = Docente::findOrFail($solicitud->docente_id);
+        // Obtener todos los docentes asociados a la solicitud
+        $docenteSolicitudes = DocenteSolicitud::where('solicitud_ambiente_id', $solicitud->id)->get();
+        foreach ($docenteSolicitudes as $docenteSolicitud) {
+            $docente = Docente::findOrFail($docenteSolicitud->docente_id);
             if ($docente->usuario) {
                 $usuario = $docente->usuario;
                 Mail::to($usuario->email)->send(new EnviarCorreo($solicitud, 'rechazada'));
             }
+        }
 
             $solicitud->delete();
 
