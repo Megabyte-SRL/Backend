@@ -401,7 +401,7 @@ class SolicitudAmbienteController extends Controller
                 }
             }
 
-            DeleteSolicitudAmbiente::dispatch($solicitudIds)->delay(Carbon::now()->addMinutes(15));
+            DeleteSolicitudAmbiente::dispatch($solicitudIds)->delay(Carbon::now()->addMinutes(5));
             DB::commit();
 
             return response()->json([
