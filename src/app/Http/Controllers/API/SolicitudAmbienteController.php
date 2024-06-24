@@ -8,12 +8,14 @@ use App\Http\Resources\SolicitudStatusChangeResource;
 use App\Http\Requests\GuardarSolicitudAmbienteRequest;
 use App\Mail\SolicitudAprobadaMailable;
 use App\Mail\SolicitudRechazadaMailable;
+use App\Mail\SugerirHorariosMailable;
 use App\Models\Docente;
 use App\Models\DocenteSolicitud;
 use App\Models\HorarioDisponible;
 use App\Models\SolicitudAmbiente;
 use App\Models\SolicitudStatusChange;
 use App\Jobs\DeleteSolicitudAmbiente;
+use App\Jobs\SendRejectionEmailsJob;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -124,7 +126,6 @@ class SolicitudAmbienteController extends Controller
             ]);
 
             $solicitud->delete();
-
             DB::commit();
 
             $docente = Docente::findOrFail($solicitud->docente_id);
@@ -133,10 +134,20 @@ class SolicitudAmbienteController extends Controller
                 Mail::to($usuario->email)->send(new SolicitudAprobadaMailable($solicitud, $docente));
             }
 
+            // Send emails to all docentes with an email asynchronously
+            $allDocentes = Docente::whereHas('usuario', function ($query) {
+                $query->whereNotNull('email');
+            })->get();
+
+            foreach ($allDocentes as $docente) {
+                SendApprovalEmailsJob::dispatch($solicitud, $docente);
+            }
+
             return response()->json([
                 'msg' => 'Solicitud aprobada exitosamente',
                 'data' => $solicitud
             ], 200);
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -170,10 +181,16 @@ class SolicitudAmbienteController extends Controller
             }
 
             $solicitud->delete();
-
             DB::commit();
 
-            
+            // Send emails to all docentes with an email asynchronously
+            $allDocentes = Docente::whereHas('usuario', function ($query) {
+                $query->whereNotNull('email');
+            })->get();
+
+            foreach ($allDocentes as $docente) {
+                SendRejectionEmailsJob::dispatch($solicitud, $docente);
+            }
 
             return response()->json([
                 'msg' => 'Solicitud rechazada exitosamente',
@@ -369,6 +386,19 @@ class SolicitudAmbienteController extends Controller
                     'prioridad' => 0,
                 ]);
                 $solicitudIds[] = $solicitud->id;
+
+                // Send email to the primary docente
+                try {
+                    $docente = Docente::findOrFail($request->input('docenteId'));
+                    if ($docente->usuario && $docente->usuario->email) {
+                        Mail::to($docente->usuario->email)->send(new SugerirHorariosMailable($solicitud));
+                    }
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'res' => false,
+                        'msg' => 'Error sugeriendo horarios.'
+                    ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                }
             }
 
             DeleteSolicitudAmbiente::dispatch($solicitudIds)->delay(Carbon::now()->addMinutes(15));
@@ -489,5 +519,4 @@ class SolicitudAmbienteController extends Controller
 
         return SolicitudStatusChangeResource::collection($statusChanges);
     }
-
 }
