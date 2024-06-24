@@ -7,10 +7,11 @@ use App\Http\Requests\GuardarHorarioMateriasArchivoRequest;
 use App\Models\Docente;
 use App\Models\Materia;
 use App\Models\Grupo;
+use App\Models\Usuario;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Facades\Hash;
 
 class HorarioMateriasController extends Controller
 {
@@ -33,7 +34,6 @@ class HorarioMateriasController extends Controller
 
             $header = fgetcsv($handle);
             if ($header === false) {
-                Log::error('Failed to read the header.');
                 fclose($handle);
                 Storage::delete($path);
                 return response()->json(['msg' => 'Failed to read the header'], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -48,7 +48,6 @@ class HorarioMateriasController extends Controller
 
             return response()->json(['msg' => 'Archivo procesado exitosamente'], Response::HTTP_OK);
         } catch (\Exception $e) {
-            Log::error('Error cargando ambientes: '. $e->getMessage());
             return response()->json(['msg' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -62,6 +61,7 @@ class HorarioMateriasController extends Controller
 
         $nombreDocente = $data['Nombre'];
         $apellidoDocente = $data['Apellido'];
+        $emailDocente = $data['Email'];
         
         $materia = Materia::firstOrCreate([
             'codigo' => $codigo,
@@ -69,9 +69,17 @@ class HorarioMateriasController extends Controller
             'nivel' => $nivel,
         ]);
 
+        $usuario = Usuario::firstOrCreate([
+            'email' => $emailDocente,
+        ], [
+            'password' => Hash::make('password1234'),
+            'rol' => 'docente',
+        ]);
+
         $docente = Docente::firstOrCreate([
             'nombre' => $nombreDocente,
             'apellido' => $apellidoDocente,
+            'usuario_id' => $usuario->id,
         ]);
 
         Grupo::create([

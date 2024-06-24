@@ -33,6 +33,16 @@ class DeleteSolicitudAmbiente implements ShouldQueue
      */
     public function handle()
     {
-        SolicitudAmbiente::whereIn('id', $this->solicitudIds)->delete();
+        foreach ($this->solicitudIds as $solicitudId) {
+            $solicitud = SolicitudAmbiente::find($solicitudId);
+            if ($solicitud) {
+                $horarioDisponible = HorarioDisponible::find($solicitud->horario_disponible_id);
+                if ($horarioDisponible) {
+                    $horarioDisponible->estado = 'disponible';
+                    $horarioDisponible->save();
+                }
+                $solicitud->delete();
+            }
+        }
     }
 }
